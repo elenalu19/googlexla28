@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --color-la-poppy: #FF6B00;
+  --color-la-scarlet: #E63946;
+  --color-la-bluebell: #4361EE;
+  --color-la-sagebrush: #2D6A4F;
+  --color-la-success: #4eb050;
+  --color-la-miss: #f06679;
+  --color-la-brief: #778f77;
+  --color-la-accent: #f98b0a;
+  --color-la-background: #FDFBF7;
+  --color-la-dark: #12141A;
+  --color-la-card: #FFFFFF;
+  --color-la-border: #E8E5DF;
+  --color-la-text-dim: #71717A;
+  
+  /* Retain semantic aliases for compatibility but point them to the new palette */
+  --color-la-pink: var(--color-la-scarlet);
+  --color-la-cyan: var(--color-la-bluebell);
+  --color-la-gold: var(--color-la-poppy);
+  --color-la-win: var(--color-la-sagebrush);
+  --color-la-loss: var(--color-la-scarlet);
+  
+  --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-la-background text-la-dark font-sans antialiased;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-la-border rounded-full hover:bg-la-text-dim/50 transition-colors;
+  }
+}
+
+@layer components {
+  .prof-card {
+    @apply bg-la-card border border-la-border rounded-2xl p-6 transition-all;
+  }
+  
+  .prof-button-pick {
+    @apply w-24 h-20 rounded-xl border-2 border-la-border bg-transparent flex flex-col items-center justify-center gap-1 transition-all;
+  }
+}

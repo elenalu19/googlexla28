@@ -1,0 +1,98 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores user progress, flames, and badges.",
+      "type": "object",
+      "properties": {
+        "flames": {
+          "type": "number",
+          "description": "Current balance of Flames."
+        },
+        "ownedBadges": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "IDs of badges owned by the user."
+        },
+        "scoutLevel": {
+          "type": "string",
+          "description": "Current scouting rank name."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the user first signed in."
+        }
+      },
+      "required": ["flames", "ownedBadges"]
+    },
+    "Lineup": {
+      "title": "Lineup Submission",
+      "description": "A set of picks submitted by a user for a specific contest.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The user who submitted this lineup."
+        },
+        "selections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lineId": { "type": "string" },
+              "pick": { "type": "string", "enum": ["more", "less"] },
+              "sport": { "type": "string" },
+              "metric": { "type": "string" },
+              "line": { "type": "number" }
+            }
+          }
+        },
+        "stake": {
+          "type": "number",
+          "description": "Flames invested."
+        },
+        "potentialReturn": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "won", "lost"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["userId", "selections", "stake", "status"]
+    },
+    "QuizStats": {
+      "title": "User Quiz Statistics",
+      "description": "Tracks daily quiz completions to enforce limits.",
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "number",
+          "description": "Number of questions answered today."
+        }
+      },
+      "required": ["count"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Individual user profiles."
+    },
+    "/lineups/{lineupId}": {
+      "schema": "Lineup",
+      "description": "History of submitted lineups."
+    },
+    "/user_quiz_stats/{statId}": {
+      "schema": "QuizStats",
+      "description": "Tracking daily quiz counts (ID format: {userId}_{YYYY-MM-DD})."
+    }
+  }
+}

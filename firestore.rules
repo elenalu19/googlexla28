@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default Deny Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitives & Global Helpers
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    // Mandating email verification as per instructions
+    function isVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+
+    // User Validation Blueprint
+    function isValidUser(data) {
+      return data.flames is number && data.flames >= 0
+             && data.ownedBadges is list
+             && data.ownedBadges.size() <= 100
+             && (data.ownedBadges.size() == 0 || data.ownedBadges[0] is string)
+             && data.createdAt is timestamp;
+    }
+
+    match /users/{userId} {
+      // Pillar 6: PII Isolation - Only owner can read their profile
+      allow read: if isOwner(userId);
+      
+      // Pillar 2 & 10: Validation & Temporal Integrity
+      allow create: if isOwner(userId) 
+                    && isValidId(userId)
+                    && isValidUser(incoming())
+                    && incoming().flames == 500
+                    && incoming().ownedBadges.size() == 0
+                    && incoming().createdAt == request.time;
+
+      // Pillar 4 & 9: Tiered Identity & Immortality
+      allow update: if isOwner(userId)
+                    && isValidUser(incoming())
+                    && incoming().createdAt == existing().createdAt
+                    && (
+                      // Action: Spend Flames (Shop or Lineup Stake)
+                      (incoming().diff(existing()).affectedKeys().hasOnly(['flames', 'ownedBadges'])) ||
+                      (incoming().diff(existing()).affectedKeys().hasOnly(['flames']))
+                    );
+    }
+
+    // Lineup Validation Blueprint
+    function isValidLineup(data) {
+      return data.userId == request.auth.uid
+             && data.stake == 50
+             && data.status in ['pending', 'won', 'lost']
+             && data.selections is list
+             && data.selections.size() >= 2 && data.selections.size() <= 6
+             && data.createdAt == request.time
+             && data.latestDay is number;
+    }
+
+    match /lineups/{lineupId} {
+      // Pillar 8: Secure List Queries - evaluation of resource.data
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      
+      // Pillar 7: Atomicity (implicitly handled by app logic, but rules enforce creator ownership)
+      allow create: if isVerified() 
+                    && isValidId(lineupId) 
+                    && isValidLineup(incoming());
+      
+      allow update: if isOwner(existing().userId)
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['status'])
+                    && incoming().status in ['won', 'lost'];
+    }
+
+    // Quiz Stats Validation
+    function isValidQuizStats(data) {
+      return data.count is number && data.count >= 0 && data.count <= 15;
+    }
+
+    match /user_quiz_stats/{statId} {
+      allow get: if isSignedIn() && statId.startsWith(request.auth.uid);
+      
+      allow create: if isSignedIn() 
+                    && statId.startsWith(request.auth.uid)
+                    && isValidQuizStats(incoming())
+                    && incoming().count == 0;
+      
+      allow update: if isSignedIn()
+                    && statId.startsWith(request.auth.uid)
+                    && isValidQuizStats(incoming())
+                    && incoming().count == existing().count + 1;
+    }
+
+    // Health check path
+    match /test/connection {
+      allow read: if isSignedIn();
+    }
+  }
+}
