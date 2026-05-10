@@ -51,8 +51,7 @@ export const BetCard: React.FC<BetCardProps> = ({ line, onSelect, selectedPick }
           </div>
           <div className="flex items-center justify-center gap-3">
             <span className="text-[11px] font-black text-la-dark px-3 py-1 bg-la-border/30 rounded-lg border border-la-border italic inline-flex items-center gap-1.5 uppercase">
-              {line.sport.toLowerCase().includes("women's") || line.sport.toLowerCase().includes("women") ? "USA WOMEN" : 
-               line.sport.toLowerCase().includes("men's") || line.sport.toLowerCase().includes("men") ? "USA MEN" : "USA"}
+              Team USA
             </span>
             {line.opponent && line.opponent.trim() !== "" && (
               <>
@@ -170,8 +169,7 @@ export const BetCard: React.FC<BetCardProps> = ({ line, onSelect, selectedPick }
               <div className="flex justify-center items-center mb-4 px-2">
                 <span className="text-[11px] font-black uppercase tracking-widest text-la-bluebell flex items-center gap-2">
                   <Icons.History size={14} /> 
-                  {line.sport.toLowerCase().includes("women's") || line.sport.toLowerCase().includes("women") ? "USA WOMEN" : 
-                   line.sport.toLowerCase().includes("men's") || line.sport.toLowerCase().includes("men") ? "USA MEN" : "USA"} MISSION HISTORY
+                  Team USA MISSION HISTORY
                 </span>
               </div>
               <div className="grid grid-cols-5 gap-3">
@@ -203,8 +201,7 @@ export const BetCard: React.FC<BetCardProps> = ({ line, onSelect, selectedPick }
                 <div className="flex justify-center items-center mb-4 px-2">
                   <span className="text-[11px] font-black uppercase tracking-widest text-la-scarlet flex items-center gap-2">
                     <Icons.Swords size={14} /> 
-                    {line.sport.toLowerCase().includes("women's") || line.sport.toLowerCase().includes("women") ? "USA WOMEN" : 
-                     line.sport.toLowerCase().includes("men's") || line.sport.toLowerCase().includes("men") ? "USA MEN" : "USA"} vs {line.opponent.replace(/^USA\s+vs\s+/i, '').replace(/^TEAM\s+/i, '').toUpperCase()}
+                    Team USA vs {line.opponent.replace(/^USA\s+vs\s+/i, '').replace(/^TEAM\s+/i, '').toUpperCase()}
                   </span>
                 </div>
                 {line.headToHead && line.headToHead.length > 0 ? (

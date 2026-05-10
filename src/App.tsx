@@ -46,7 +46,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [flames, setFlames] = useState(INITIAL_FLAMES);
   const [ownedBadges, setOwnedBadges] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<'picks' | 'shop' | 'calendar' | 'lineups'>('picks');
+  const [activeTab, setActiveTab] = useState<'picks' | 'shop' | 'calendar' | 'lineups' | 'quiz'>('picks');
   const [selectedSport, setSelectedSport] = useState("Men's Artistic Gymnastics");
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [lines, setLines] = useState<BetLine[]>(MOCK_LINES);

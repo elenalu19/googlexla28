@@ -20,20 +20,42 @@ export const VibeQuiz: React.FC<VibeQuizProps> = ({ onReward }) => {
   const MAX_DAILY = 15;
 
   useEffect(() => {
-    checkDailyLimit();
+    if (auth.currentUser) {
+      checkDailyLimit();
+    } else {
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        if (user) {
+          checkDailyLimit();
+          unsubscribe();
+        }
+      });
+      return () => unsubscribe();
+    }
   }, []);
 
   const checkDailyLimit = async () => {
     if (!auth.currentUser) return;
-    const today = new Date().toISOString().split('T')[0];
-    const quizRef = doc(db, 'user_quiz_stats', `${auth.currentUser.uid}_${today}`);
-    const snap = await getDoc(quizRef);
-    if (snap.exists()) {
-      setDailyCount(snap.data().count || 0);
-    } else {
-      await setDoc(quizRef, { count: 0 });
+    setLoading(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const quizRef = doc(db, 'user_quiz_stats', `${auth.currentUser.uid}_${today}`);
+      const snap = await getDoc(quizRef);
+      if (snap.exists()) {
+        setDailyCount(snap.data().count || 0);
+      } else {
+        try {
+          await setDoc(quizRef, { count: 0 });
+        } catch (e) {
+          console.warn("Could not initialize quiz stats, might exist now:", e);
+        }
+        setDailyCount(0);
+      }
+      loadNewQuestion();
+    } catch (err: any) {
+      console.error("Error checking daily limit:", err);
+      setError("Failed to initialize quiz. Please try again.");
+      setLoading(false);
     }
-    loadNewQuestion();
   };
 
   const loadNewQuestion = async () => {
