@@ -23,7 +23,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ currentDay, isParaMo
 
   const getParalympicDay = (day: number) => {
     if (day < 13 || day > 27) return null;
-    return day - 15;
+    return day - 13; 
   };
 
   const getDayActivities = (day: number, isJuly: boolean) => {

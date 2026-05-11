@@ -60,6 +60,38 @@ const OLYMPIC_MATRIX: Record<string, number[]> = {
   "Wrestling": [12, 13, 14, 15, 16, 17],
 };
 
+/**
+ * Official LA28 Paralympic Schedule Matrix (Ground Truth)
+ * Day 0 = Aug 13, Day 14 = Aug 27
+ */
+const PARALYMPIC_MATRIX: Record<string, number[]> = {
+  "Blind Football (Soccer)": [7, 8, 9, 11, 13, 14],
+  "Boccia": [1, 3, 4, 5, 6, 7, 8, 9],
+  "Goalball": [5, 6, 7, 8, 9, 10, 11, 12],
+  "Para Archery": [7, 8, 9, 10, 11, 12, 13],
+  "Para Athletics": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14],
+  "Para Badminton": [9, 10, 11, 12, 13, 14],
+  "Para Canoe": [11, 12, 13],
+  "Para Climbing": [11, 12, 13, 14],
+  "Para Cycling Road": [9, 10, 11, 12, 13],
+  "Para Cycling Track": [3, 4, 5, 6],
+  "Para Equestrian": [3, 4, 5, 6, 8],
+  "Para Judo": [11, 12, 13],
+  "Para Powerlifting": [9, 10, 11, 12, 13, 14],
+  "Para Rowing": [5, 6, 7],
+  "Para Swimming": [5, 6, 7, 8, 9, 10, 11, 12, 13],
+  "Para Table Tennis": [3, 4, 5, 6, 8, 9, 10, 11, 12, 13],
+  "Para Taekwondo": [10, 11, 12],
+  "Para Triathlon": [5, 6],
+  "Shooting Para Sport": [3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "Sitting Volleyball": [5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+  "Wheelchair Basketball": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+  "Wheelchair Fencing": [3, 4, 5, 6, 7],
+  "Wheelchair Rugby": [0, 1, 3, 4, 5, 6],
+  "Wheelchair Tennis": [5, 6, 7, 8, 9, 10, 11, 12, 13],
+  "Ceremonies": [2, 14],
+};
+
 const generateOlympicSports = () => {
   const sports = new Set<string>();
   Object.keys(OLYMPIC_MATRIX).forEach(baseSport => {
@@ -72,7 +104,7 @@ const generateOlympicSports = () => {
 export const OLYMPIC_SPORTS = generateOlympicSports();
 
 export const PARALYMPIC_SPORTS = [
-  'Blind Football', 'Boccia', 'Goalball', 'Para Archery', "Men's Para Athletics", "Women's Para Athletics", 'Para Badminton', 
+  'Blind Football (Soccer)', 'Boccia', 'Goalball', 'Para Archery', "Men's Para Athletics", "Women's Para Athletics", 'Para Badminton', 
   'Para Canoe', 'Para Climbing', 'Para Cycling Road', 'Para Cycling Track', 'Para Equestrian', 
   'Para Judo', 'Para Powerlifting', 'Para Rowing', 'Para Shooting', 
   "Men's Para Swimming", "Women's Para Swimming", 'Para Table Tennis', 'Para Taekwondo', 'Para Triathlon', 
@@ -95,12 +127,12 @@ export const TOP_PARALYMPIC = [
 /**
  * Formats a competition day into an actual LA28 date string
  * @param day Competition day (relative to mode start)
- * @param isPara Whether to use Paralympic dates (Starts August 15)
- * @returns Formatted date string (e.g., 07/12/2028 or 08/15/2028)
+ * @param isPara Whether to use Paralympic dates (Starts August 13)
+ * @returns Formatted date string (e.g., 07/12/2028 or 08/13/2028)
  */
 export const formatDayToDate = (day: number, isPara: boolean = false): string => {
   if (isPara) {
-    const date = 15 + day;
+    const date = 13 + day;
     return `08/${date}/2028`;
   }
   const date = 12 + day;
@@ -134,80 +166,44 @@ const generateOlympicSchedule = () => {
 
 export const OLYMPIC_SCHEDULE = generateOlympicSchedule();
 
-export const PARALYMPIC_SCHEDULE: Record<number, { sport: string; opponent: string }[]> = {
-  0: [{ sport: "Opening Ceremony", opponent: 'LA28 Inglewood' }],
-  1: [
-    { sport: "Men's Para Athletics", opponent: '100m T54 Heats' },
-    { sport: "Women's Para Swimming", opponent: '100m Backstroke S10' },
-    { sport: "Wheelchair Basketball", opponent: 'Group Stage: USA vs GBR' },
-    { sport: "Wheelchair Rugby", opponent: 'Pool A: USA vs Japan' },
-    { sport: "Para Table Tennis", opponent: 'Singles Prelims' },
-    { sport: "Wheelchair Fencing", opponent: 'Individual Category A' },
-    { sport: "Goalball", opponent: 'Pool Play: USA vs China' }
-  ],
-  2: [
-    { sport: "Men's Para Swimming", opponent: '50m Freestyle S11' },
-    { sport: "Women's Para Athletics", opponent: 'Discus Throw F41' },
-    { sport: "Sitting Volleyball", opponent: 'Pool Play: Iran vs Brazil' },
-    { sport: "Wheelchair Basketball", opponent: 'Pool Play: Canada vs GER' },
-    { sport: "Para Archery", opponent: 'W1 Ranking Round' }
-  ],
-  3: [
-    { sport: "Para Archery", opponent: 'Compound Men Individual' },
-    { sport: "Para Equestrian", opponent: 'Individual Title Test' },
-    { sport: "Para Rowing", opponent: 'PR1 Single Sculls Heats' },
-    { sport: "Wheelchair Rugby", opponent: 'Semi-Finals' },
-    { sport: "Para Badminton", opponent: 'Group Stage' }
-  ],
-  4: [
-    { sport: "Para Triathlon", opponent: 'Individual Finals' },
-    { sport: "Shooting Para Sport", opponent: '10m Air Pistol Mixed' },
-    { sport: "Sitting Volleyball", opponent: 'Pool Stage' },
-    { sport: "Para Taekwondo", opponent: 'K44 Finals' }
-  ],
-  5: [
-    { sport: "Para Judo", opponent: 'J1/J2 Weight Finals' },
-    { sport: "Para Powerlifting", opponent: 'Lightweight Finals' },
-    { sport: "Wheelchair Basketball", opponent: 'Quarter-Finals' },
-    { sport: "Para Climbing", opponent: 'Speed Qualification' }
-  ],
-  6: [
-    { sport: "Para Taekwondo", opponent: 'Heavyweight Finals' },
-    { sport: "Para Badminton", opponent: 'Quarter-Finals' },
-    { sport: "Para Swimming", opponent: 'Medal Events Night' },
-    { sport: "Para Climbing", opponent: 'Lead Finals' }
-  ],
-  7: [
-    { sport: "Para Powerlifting", opponent: 'Middleweight Finals' },
-    { sport: "Wheelchair Tennis", opponent: 'Singles Quarter-Finals' },
-    { sport: "Para Athletics", opponent: '400m Finals Session' }
-  ],
-  8: [
-    { sport: "Para Canoe", opponent: 'Sprint Heats' },
-    { sport: "Para Cycling Road", opponent: 'Time Trial Finals' },
-    { sport: "Sitting Volleyball", opponent: 'Semi-Finals' }
-  ],
-  9: [
-    { sport: "Wheelchair Tennis", opponent: 'Singles Semi-Finals' },
-    { sport: "Para Athletics", opponent: 'Universal Relay Finals' },
-    { sport: "Para Cycling Road", opponent: 'Road Race Finals' }
-  ],
-  10: [
-    { sport: "Para Swimming", opponent: 'Relay Finals' },
-    { sport: "Sitting Volleyball", opponent: 'Gold Medal Match' },
-    { sport: "Wheelchair Basketball", opponent: 'Semi-Finals' }
-  ],
-  11: [
-    { sport: "Blind Football", opponent: 'Gold Medal Match: BRA vs ESP' },
-    { sport: "Para Powerlifting", opponent: 'Heavyweight Finals' },
-    { sport: "Wheelchair Rugby", opponent: 'Gold Medal Match' }
-  ],
-  12: [
-    { sport: "Para Athletics", opponent: 'Marathon Finals' },
-    { sport: "Wheelchair Basketball", opponent: 'Gold Medal Match' },
-    { sport: "Para Closing", opponent: 'Grand Finale' }
-  ]
+const generateParalympicSchedule = () => {
+  const schedule: Record<number, { sport: string; opponent: string }[]> = {};
+  
+  // Initialize all days (0-14)
+  for (let i = 0; i <= 14; i++) {
+    schedule[i] = [];
+  }
+
+  // Populate from matrix
+  Object.entries(PARALYMPIC_MATRIX).forEach(([baseSport, days]) => {
+    days.forEach(day => {
+      if (baseSport === "Ceremonies") {
+        schedule[day].push({ 
+          sport: day === 2 ? "Opening Ceremony" : "Closing Ceremony", 
+          opponent: day === 2 ? "LA28 Inglewood" : "Grand Finale" 
+        });
+      } else if (baseSport === "Para Athletics" || baseSport === "Para Swimming") {
+        // Handle gender variants for athletics and swimming
+        ["Men's", "Women's"].forEach(gender => {
+          const fullSport = `${gender} ${baseSport}`;
+          schedule[day].push({ 
+            sport: fullSport, 
+            opponent: `Medal Quest: ${gender}` 
+          });
+        });
+      } else {
+        schedule[day].push({ 
+          sport: baseSport, 
+          opponent: `Team USA Action` 
+        });
+      }
+    });
+  });
+
+  return schedule;
 };
+
+export const PARALYMPIC_SCHEDULE = generateParalympicSchedule();
 
 export const getScheduleForDay = (day: number, isParalympic: boolean = false): string[] => {
   const schedule = isParalympic ? PARALYMPIC_SCHEDULE : OLYMPIC_SCHEDULE;

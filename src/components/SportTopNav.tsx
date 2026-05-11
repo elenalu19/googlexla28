@@ -75,50 +75,89 @@ export const SportTopNav: React.FC<SportTopNavProps> = ({ selectedSport, onSelec
     );
   };
 
-  const trendingOlympic = TOP_OLYMPIC.filter(s => isPlaying(s));
-  const trendingParalympic = TOP_PARALYMPIC.filter(s => isPlaying(s));
+  const currentDaySports = Array.from(new Set(
+    getScheduleForDay(currentDay, isParaMode).map(s => 
+      s.replace(/^(Men's |Women's )/, '')
+    )
+  )).sort();
+
+  const primarySports = currentDaySports.slice(0, 6);
+  const remainingSports = currentDaySports.slice(6);
 
   return (
     <nav className="flex items-center gap-2 bg-la-background/90 backdrop-blur-md border-b border-la-border h-14 px-8 shrink-0 relative z-50">
-      <div className="text-[9px] font-black uppercase tracking-[0.2em] text-la-text-dim mr-2 opacity-50">Trending:</div>
-      
-      {/* Top Olympic Sports */}
-      {trendingOlympic.map((sport) => (
-        <button
-          key={sport}
-          onClick={() => onSelect(sport, false)}
-          className={`px-4 h-8 rounded-full text-[7.5px] font-black uppercase tracking-tight transition-all flex items-center justify-center gap-1.5 border active:scale-95 shrink-0 ${
-            selectedSport === sport 
-              ? 'bg-la-bluebell text-white border-la-bluebell shadow-sm' 
-              : 'bg-white border-la-border text-la-text-dim hover:text-la-dark hover:border-la-bluebell/30 shadow-sm'
-          }`}
-        >
-          <Trophy size={10} className="shrink-0" />
-          <span className="px-0.5 leading-none">{sport}</span>
-        </button>
-      ))}
+      <div className="flex items-center gap-2 flex-1 overflow-x-auto no-scrollbar py-2">
+        <div className="text-[9px] font-black uppercase tracking-[0.2em] text-la-bluebell mr-2 shrink-0">Available:</div>
+        
+        {primarySports.map((sport) => {
+          const isSelected = selectedSport.includes(sport);
+          return (
+            <button
+              key={sport}
+              onClick={() => onSelect(sport, isParaMode)}
+              className={`px-4 h-8 rounded-full text-[7.5px] font-black uppercase tracking-tight transition-all flex items-center justify-center gap-1.5 border active:scale-95 shrink-0 ${
+                isSelected 
+                  ? (isParaMode ? 'bg-la-poppy text-white border-la-poppy' : 'bg-la-bluebell text-white border-la-bluebell') 
+                  : 'bg-white border-la-border text-la-text-dim hover:text-la-dark hover:border-la-bluebell/30 shadow-sm'
+              }`}
+            >
+              <Trophy size={10} className="shrink-0" />
+              <span className="px-0.5 leading-none">{sport}</span>
+            </button>
+          );
+        })}
 
-      {/* Top Paralympic Sports */}
-      {trendingParalympic.map((sport) => (
-        <button
-          key={sport}
-          onClick={() => onSelect(sport, true)}
-          className={`px-4 h-8 rounded-full text-[7.5px] font-black uppercase tracking-tight transition-all flex items-center justify-center gap-1.5 border active:scale-95 shrink-0 ${
-            selectedSport === sport 
-              ? 'bg-la-poppy text-white border-la-poppy shadow-sm' 
-              : 'bg-white border-la-border text-la-text-dim hover:text-la-dark hover:border-la-poppy/30 shadow-sm'
-          }`}
-        >
-          <Zap size={10} className="shrink-0" />
-          <span className="px-0.5 leading-none">{sport}</span>
-        </button>
-      ))}
+        {remainingSports.length > 0 && (
+          <div className="relative">
+            <button
+              onClick={() => setActiveDropdown(activeDropdown === 'olympics' ? null : 'olympics')}
+              className={`px-4 h-8 rounded-full text-[7.5px] font-black uppercase tracking-tight transition-all flex items-center justify-center gap-1.5 border active:scale-95 shrink-0 bg-white border-la-border text-la-text-dim hover:text-la-dark hover:border-la-bluebell/30 shadow-sm`}
+            >
+              <span>+{remainingSports.length} MORE</span>
+              <ChevronDown size={10} className={`transition-transform ${activeDropdown === 'olympics' ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+              {activeDropdown === 'olympics' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute bottom-[calc(100%+12px)] left-0 w-[240px] bg-white border border-la-border rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-50 p-4 max-h-[300px] overflow-y-auto custom-scrollbar"
+                >
+                  <div className="grid grid-cols-1 gap-1">
+                    {remainingSports.map((sport) => (
+                      <button
+                        key={sport}
+                        onClick={() => {
+                          onSelect(sport, isParaMode);
+                          setActiveDropdown(null);
+                        }}
+                        className={`text-left text-[10px] py-2 px-3 rounded-lg transition-all font-black uppercase tracking-tight ${
+                          selectedSport.includes(sport)
+                            ? (isParaMode ? 'bg-la-poppy/10 text-la-poppy' : 'bg-la-bluebell/10 text-la-bluebell')
+                            : 'text-la-dark hover:bg-la-background'
+                        }`}
+                      >
+                        {sport}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
 
       <div className="w-[1px] h-4 bg-la-border mx-2" />
 
-      {/* Alphabetical Menus */}
-      {renderDropdown('Olympics', OLYMPIC_SPORTS, 'olympics')}
-      {renderDropdown('Paralympics', PARALYMPIC_SPORTS, 'paralympics')}
+      {/* Manual Selectors preserved but repositioned/cleaned up if needed */}
+      <div className="flex items-center gap-2">
+        {renderDropdown('All Olympics', OLYMPIC_SPORTS, 'olympics')}
+        {renderDropdown('All Paralympics', PARALYMPIC_SPORTS, 'paralympics')}
+      </div>
+
       
       {/* Backdrop for Dropdowns */}
       {activeDropdown && (

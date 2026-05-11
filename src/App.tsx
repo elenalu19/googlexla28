@@ -51,10 +51,11 @@ export default function App() {
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [lines, setLines] = useState<BetLine[]>(MOCK_LINES);
   const [loadingLines, setLoadingLines] = useState(false);
+  const [lineError, setLineError] = useState<string | null>(null);
   const [showNotification, setShowNotification] = useState<string | null>(null);
   const [currentDay, setCurrentDay] = useState(0);
   const [isParaMode, setIsParaMode] = useState(false);
-  const totalDays = isParaMode ? 12 : 18; // 0 to 18 for Olympics (July 12-30)
+  const totalDays = isParaMode ? 14 : 18; // 0 to 18 for Olympics, 0 to 14 for Paralympics
 
   // Lineup Builder State
   const [lineup, setLineup] = useState<Selection[]>([]);
@@ -266,16 +267,22 @@ export default function App() {
 
   // Add this helper near other helpers
   const handleSportSelect = (sport: string, isPara: boolean) => {
+    // If we're already on a day where this sport is active, just select it
+    const currentSchedule = isPara ? PARALYMPIC_SCHEDULE : OLYMPIC_SCHEDULE;
+    const isActiveOnCurrentDay = (currentSchedule[currentDay] || []).some(s => s.sport.includes(sport));
+
     setIsParaMode(isPara);
     setSelectedSport(sport);
     
-    // Find first day this sport is active in the corresponding schedule
-    const schedule = isPara ? PARALYMPIC_SCHEDULE : OLYMPIC_SCHEDULE;
-    const days = Object.keys(schedule).map(Number).sort((a, b) => a - b);
-    for (const day of days) {
-      if (schedule[day].some(s => s.sport === sport)) {
-        setCurrentDay(day);
-        break;
+    if (!isActiveOnCurrentDay) {
+      // Find first day this sport is active in the corresponding schedule
+      const schedule = isPara ? PARALYMPIC_SCHEDULE : OLYMPIC_SCHEDULE;
+      const days = Object.keys(schedule).map(Number).sort((a, b) => a - b);
+      for (const day of days) {
+        if (schedule[day].some(s => s.sport.includes(sport))) {
+          setCurrentDay(day);
+          break;
+        }
       }
     }
   };
@@ -286,6 +293,7 @@ export default function App() {
 
   const refreshLines = async () => {
     setLoadingLines(true);
+    setLineError(null);
     try {
       const opponent = getOpponentForSport(currentDay, selectedSport, isParaMode);
       const newLinesRaw = await generateNewLines(currentDay, selectedSport, opponent);
@@ -295,8 +303,9 @@ export default function App() {
       }));
       setLines(newLines);
       setCurrentLineIndex(0);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setLineError(e.message || "Failed to generate projections. Team USA datasets are currently busy.");
     } finally {
       setLoadingLines(false);
     }
@@ -448,7 +457,34 @@ export default function App() {
 
                   <div className="flex-1 flex items-center justify-center">
                     <AnimatePresence mode="wait">
-                      {filteredLines.length > 0 ? (
+                      {loadingLines ? (
+                        <motion.div 
+                          key="loading"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="text-center p-12 w-full"
+                        >
+                          <div className="w-16 h-16 border-4 border-la-bluebell/20 border-t-la-bluebell rounded-full animate-spin mx-auto mb-6" />
+                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-la-bluebell animate-pulse">Syncing Team USA Intelligence...</p>
+                        </motion.div>
+                      ) : lineError ? (
+                        <motion.div 
+                          key="error"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-center p-12 bg-la-scarlet/5 border border-la-scarlet/20 rounded-3xl w-full"
+                        >
+                          <X size={48} className="text-la-scarlet mx-auto mb-4 opacity-50" />
+                          <p className="text-la-scarlet font-bold text-sm mb-4">{lineError}</p>
+                          <button 
+                            onClick={refreshLines}
+                            className="bg-la-scarlet text-white px-8 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
+                          >
+                            Retry Sync
+                          </button>
+                        </motion.div>
+                      ) : filteredLines.length > 0 ? (
                         <motion.div
                           key={filteredLines[currentLineIndex].id}
                           initial={{ opacity: 0, x: 20, scale: 0.95 }}

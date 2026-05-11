@@ -14,7 +14,7 @@ export const BetCard: React.FC<BetCardProps> = ({ line, onSelect, selectedPick }
   const IconComponent = (Icons as any)[line.icon] || Icons.Trophy;
 
   // Determine which side is "Better" based on category
-  const isInverse = line.category === 'Placement' || line.category === 'Ranking';
+  const isInverse = line.category === 'Placement' || line.category === 'Ranking' || line.category === 'Timed';
 
   const handlePick = (type: 'better' | 'worse') => {
     if (isInverse) {
@@ -236,16 +236,87 @@ export const BetCard: React.FC<BetCardProps> = ({ line, onSelect, selectedPick }
           </div>
         </div>
 
-        <div className="flex flex-col items-center gap-3 bg-la-brief text-white p-5 md:p-6 rounded-3xl border border-la-dark/10 shadow-lg relative overflow-hidden text-center">
-           {/* Micro-decorative accent */}
-           <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 blur-2xl rounded-full translate-x-12 -translate-y-12" />
+        <div className="flex flex-col gap-4 bg-[#d1edd5] text-la-dark p-5 md:p-6 rounded-3xl border border-la-border/10 shadow-lg relative overflow-hidden">
+           {/* Decorative analysis background */}
+           <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
            
-           <Icons.Search size={20} className="text-la-accent shrink-0" />
-           <div className="flex flex-col gap-1 z-10">
-              <span className="text-[10px] font-black uppercase tracking-widest text-la-accent">Mission Brief</span>
-              <p className="text-xs text-white/90 italic leading-relaxed font-medium">
-                "{line.vibeInsight}"
-              </p>
+           <div className="flex items-center justify-between relative z-10">
+             <div className="flex items-center gap-3">
+               <div className="w-10 h-10 rounded-full bg-la-bluebell/10 flex items-center justify-center border border-la-bluebell/20 shrink-0">
+                 <Icons.TrendingUp size={18} className="text-la-bluebell" />
+               </div>
+               <div className="flex flex-col">
+                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-la-bluebell">Performance Velocity</span>
+                 <span className="text-[9px] font-bold text-[#e0a9a9] uppercase">Trend Analysis v2.1</span>
+               </div>
+             </div>
+             <div className="text-right">
+               <span className="text-[10px] font-black text-la-dark/40 uppercase">LA28 Projection</span>
+             </div>
+           </div>
+
+           <div className="grid grid-cols-[1fr_auto] gap-4 items-end relative z-10">
+             <div className="flex flex-col gap-2">
+               <div className="h-10 w-full bg-black/5 rounded-xl p-2 flex items-center">
+                 {/* Miniature Sparkline using SVG for precision and styling */}
+                 <svg viewBox="0 0 100 20" className="w-full h-full">
+                   {(() => {
+                     const sortedHistory = [...line.history].sort((a, b) => a.year - b.year);
+                     if (sortedHistory.length < 2) return null;
+                     
+                     const min = Math.min(...sortedHistory.map(d => d.value));
+                     const max = Math.max(...sortedHistory.map(d => d.value));
+                     const range = max - min || 1;
+                     
+                     const path = sortedHistory.map((h, i) => {
+                       const x = i * (100 / (sortedHistory.length - 1));
+                       const y = 18 - ((h.value - min) / range) * 16;
+                       return `${i === 0 ? 'M' : 'L'} ${x},${y}`;
+                     }).join(' ');
+                     
+                     return (
+                       <motion.path
+                         initial={{ pathLength: 0 }}
+                         animate={{ pathLength: 1 }}
+                         transition={{ duration: 1.5, ease: "easeInOut" }}
+                         d={path}
+                         fill="none"
+                         stroke="#4361EE"
+                         strokeWidth="2"
+                         strokeLinecap="round"
+                       />
+                     );
+                   })()}
+                 </svg>
+               </div>
+               <div className="flex justify-between px-1">
+                 <span className="text-[8px] font-bold text-la-dark/30 uppercase">{Math.min(...line.history.map(h => h.year))}</span>
+                 <span className="text-[8px] font-bold text-la-dark/30 uppercase">Recent</span>
+               </div>
+             </div>
+
+             <div className="flex flex-col items-end">
+               {(() => {
+                 const sortedHistory = [...line.history].sort((a, b) => b.year - a.year);
+                 const latestVal = sortedHistory[0]?.value;
+                 const diff = isInverse ? (latestVal - line.line) : (line.line - latestVal);
+                 const isBetter = diff > 0;
+                 const absDiff = Math.abs(diff).toFixed(isPointsBased ? 1 : 2);
+                 const direction = isBetter ? (isPointsBased ? "above" : "faster") : (isPointsBased ? "below" : "slower");
+                 const year = sortedHistory[0]?.year;
+
+                 return (
+                   <>
+                     <div className={`text-lg font-black italic tracking-tighter ${isBetter ? 'text-la-success' : 'text-la-miss'}`}>
+                       {isBetter ? '+' : ''}{absDiff}{isPointsBased ? '' : 's'}
+                     </div>
+                     <p className="text-[9px] text-[#e0a9a9] font-bold uppercase text-right leading-tight max-w-[100px]">
+                       Pacing {direction} than {year} Gold benchmark
+                     </p>
+                   </>
+                 );
+               })()}
+             </div>
            </div>
         </div>
       </div>
